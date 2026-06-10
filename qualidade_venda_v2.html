@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Análise de Qualidade de Venda — Feriado 10/06</title>
+  <style>
+    :root { color-scheme: light; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f4f5f7; color: #1a1a2e; padding: 24px; max-width: 1320px; margin: 0 auto; }
+
+    header { background: linear-gradient(135deg, #e83e3e 0%, #ff6b35 100%); color: white; border-radius: 14px; padding: 22px 28px; margin-bottom: 20px; }
+    header h1 { font-size: 1.35rem; font-weight: 700; margin-bottom: 3px; }
+    header p  { font-size: 0.82rem; opacity: 0.85; }
+
+    .section { margin-bottom: 28px; }
+    h2 { font-size: 0.82rem; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 14px; }
+
+    /* DISCLAIMER */
+    .disclaimer-box { background: #fefce8; border: 1px solid #fde68a; border-radius: 10px; padding: 13px 16px; margin-bottom: 14px; }
+    .disclaimer-box .d-title { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing:.06em; color: #92400e; margin-bottom: 6px; }
+    .disclaimer-box .d-item { font-size: 0.75rem; color: #78350f; line-height: 1.6; margin-bottom: 4px; }
+    .disclaimer-box .d-item:last-child { margin-bottom: 0; }
+    .disclaimer-box .d-item strong { color: #451a03; }
+
+    /* CARDS */
+    .tables-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .card { background: white; border-radius: 12px; padding: 18px 20px; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+    .card-title { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing:.07em; color: #444; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 2px solid #f0f0f0; display: flex; align-items: center; gap: 8px; }
+    .pill-self { background:#fef3c7; color:#92400e; border-radius:20px; padding:2px 10px; font-size:0.7rem; }
+    .pill-com  { background:#dbeafe; color:#1e40af; border-radius:20px; padding:2px 10px; font-size:0.7rem; }
+
+    /* TABELAS */
+    table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+    thead th { background: #f8f9fb; color: #777; font-weight: 600; padding: 7px 10px; border-bottom: 1px solid #eee; text-align: left; font-size: 0.73rem; text-transform: uppercase; letter-spacing: .04em; }
+    thead th:not(:first-child) { text-align: center; }
+    thead th.th-delta { background: #f1f5f9; color: #475569; }
+    tbody td { padding: 8px 10px; border-bottom: 1px solid #f5f5f5; vertical-align: middle; font-size: 0.81rem; }
+    tbody td:not(:first-child) { text-align: center; }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr.accent td { background: #fffbeb; }
+    td.td-delta { background: #f8fafc; font-weight: 700; font-size: 0.78rem; }
+
+    .n   { font-weight: 700; color: #111; }
+    .pct { font-size: 0.71rem; font-weight: 600; margin-left: 2px; }
+    .ok   { color: #16a34a; }
+    .warn { color: #d97706; }
+    .bad  { color: #dc2626; }
+    .neu  { color: #aaa; font-weight: 400; font-size: 0.75rem; }
+
+    .delta     { font-weight: 700; font-size: 0.78rem; }
+    .delta.pos { color: #16a34a; }
+    .delta.neg { color: #dc2626; }
+    .delta.neu { color: #94a3b8; }
+    .delta.wneg{ color: #d97706; }
+
+    .fn { font-size: 0.68rem; color: #aaa; vertical-align: super; }
+
+    .ret-racional { margin-top: 10px; background: #fafafa; border-left: 3px solid #e5e7eb; border-radius: 6px; padding: 9px 12px; font-size: 0.72rem; color: #666; line-height: 1.6; }
+    .ret-racional strong { color: #333; }
+
+    /* TABELA COMPARATIVA Self vs Com */
+    .full-card { background: white; border-radius: 12px; padding: 18px 20px; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+    .cmp-table { width: 100%; border-collapse: collapse; font-size: 0.79rem; }
+    .cmp-table thead th { background: #f8f9fb; color: #777; font-weight: 600; padding: 7px 11px; border-bottom: 1px solid #e5e7eb; text-align: center; font-size: 0.72rem; text-transform: uppercase; letter-spacing: .04em; }
+    .cmp-table thead th:first-child { text-align: left; }
+    .cmp-table thead th.self-h  { background: #fef9ec; color: #92400e; }
+    .cmp-table thead th.com-h   { background: #eff6ff; color: #1e40af; }
+    .cmp-table thead th.gap-h   { background: #f1f5f9; color: #475569; }
+    .cmp-table thead th.period-h { font-size: 0.75rem; font-weight: 700; padding: 8px 11px; border-bottom: 2px solid #e5e7eb; }
+    .cmp-table thead th.period-f { background: #fff7ed; color: #9a3412; }
+    .cmp-table thead th.period-t { background: #f0fdf4; color: #14532d; }
+    .cmp-table tbody td { padding: 8px 11px; border-bottom: 1px solid #f5f5f5; text-align: center; }
+    .cmp-table tbody td:first-child { text-align: left; font-weight: 600; color: #333; font-size: 0.8rem; }
+    .cmp-table tbody tr.accent td { background: #fffbeb; }
+    .cmp-table tbody tr.grp-hdr td { background: #f1f5f9; font-size: 0.71rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: #64748b; padding: 5px 11px; }
+    .cmp-table td.gap-cell { background: #f8fafc; font-weight: 700; font-size: 0.78rem; }
+    .cmp-table td.sep { border-left: 2px solid #e2e8f0; }
+
+    /* HIGHLIGHTS */
+    .hl-columns { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+    .hl-group { background: white; border-radius: 12px; padding: 16px 18px; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+    .hl-group-title { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing:.08em; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid; }
+    .hl-group-title.green  { color:#16a34a; border-color:#bbf7d0; }
+    .hl-group-title.red    { color:#dc2626; border-color:#fecaca; }
+    .hl-group-title.purple { color:#7c3aed; border-color:#ddd6fe; }
+    .hl-item { margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #f3f3f3; }
+    .hl-item:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+    .hl-item-title { font-size: 0.8rem; font-weight: 700; color: #222; margin-bottom: 4px; line-height: 1.3; }
+    .hl-item-body  { font-size: 0.74rem; color: #666; line-height: 1.55; }
+    .tag-row { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 5px; }
+    .tag { font-size: 0.68rem; font-weight: 700; border-radius: 4px; padding: 2px 7px; }
+    .tag.f  { background:#fef3c7; color:#92400e; }
+    .tag.t  { background:#dbeafe; color:#1e40af; }
+    .tag.d  { background:#fef2f2; color:#991b1b; }
+    .tag.g  { background:#f0fdf4; color:#15803d; }
+
+    /* FUNIL */
+    .funnel-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .funnel-card { background: white; border-radius: 12px; padding: 18px 20px; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+    .step { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+    .step-label { width: 120px; font-size: 0.76rem; color: #555; flex-shrink: 0; }
+    .step-bar-wrap { flex: 1; background: #f3f4f6; border-radius: 5px; height: 18px; overflow: hidden; }
+    .step-bar { height: 18px; border-radius: 5px; display: flex; align-items: center; padding-left: 7px; min-width: 2px; }
+    .step-bar-lbl { font-size: 0.68rem; color: white; font-weight: 700; }
+    .step-num { width: 28px; text-align: right; font-size: 0.8rem; font-weight: 700; }
+    .step-pct { width: 36px; text-align: right; font-size: 0.71rem; font-weight: 700; }
+    .loss-label { font-size: 0.68rem; color: #ef4444; margin: -2px 0 4px 128px; }
+    .loss-label.big { color: #dc2626; font-weight: 700; font-size: 0.71rem; }
+
+    /* COMPLEMENTAR */
+    .compl-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+    .compl-card { background: white; border-radius: 12px; padding: 16px 18px; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+    .kv { display: flex; justify-content: space-between; align-items: center; margin-bottom: 7px; }
+    .kv-label { font-size: 0.76rem; color: #555; }
+    .kv-val   { font-size: 0.85rem; font-weight: 700; color: #111; }
+    .kv-val.ok  { color: #16a34a; }
+    .kv-val.bad { color: #dc2626; }
+    .kv-val.warn{ color: #d97706; }
+    .mini-bar-wrap { background: #f3f4f6; border-radius: 4px; height: 5px; margin-bottom: 8px; }
+    .mini-bar { height: 5px; border-radius: 4px; }
+    .note { background: #fafafa; border-left: 3px solid #e5e7eb; border-radius: 6px; padding: 9px 12px; font-size: 0.73rem; color: #555; line-height: 1.55; margin-top: 10px; }
+    .note strong { color: #222; }
+    .origem-row { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+    .origem-lbl { font-size: 0.73rem; color: #444; width: 140px; flex-shrink: 0; }
+    .origem-bw  { flex: 1; background: #f3f4f6; border-radius: 4px; height: 12px; overflow:hidden; }
+    .origem-b   { height: 12px; border-radius: 4px; }
+    .origem-tag { font-size: 0.68rem; font-weight: 700; color: #888; width: 58px; text-align: right; }
+
+    footer { margin-top: 28px; text-align: center; font-size: 0.7rem; color: #bbb; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>📊 Qualidade de Venda — Feriado 10/06</h1>
+  <p>Vendas 04–07/06 vs total até 07/06 · Self vs Comercial · 5pdd · Retenção WoW · Share 400+</p>
+</header>
+
+<!-- ══ DISCLAIMER ══════════════════════════════════════════════ -->
+<div class="section">
+  <div class="disclaimer-box">
+    <div class="d-title">⚠️ Notas metodológicas</div>
+    <div class="d-item">📌 <strong>Share de 400+:</strong> Foi utilizado o score de growth que ainda está em validação. 85% das vendas tiveram o score aplicado e apenas 44% foram considerados com <strong>Alta ou Altíssima</strong> propensão de 400+.</div>
+    <div class="d-item">📌 <strong>Potencial 400+:</strong> KPI calculado sobre parceiros que realizaram <strong>5pdd + setup completo</strong>. Representa quem efetivamente ativou e tem propensão de migrar para o plano 400+.</div>
+  </div>
+</div>
+
+<!-- ══ TABELAS SELF + COMERCIAL ════════════════════════════════ -->
+<div class="section">
+  <h2>Comparativo de funil — feriado vs total</h2>
+  <div class="tables-row">
+
+    <!-- SELF -->
+    <div class="card">
+      <div class="card-title">Self <span class="pill-self">SELF</span></div>
+      <table>
+        <thead>
+          <tr>
+            <th>Métrica</th>
+            <th>Feriado 04–07/06</th>
+            <th>Total até 07/06</th>
+            <th class="th-delta">Δ pp</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Vendas</td>
+            <td><span class="n">177</span></td>
+            <td><span class="n">370</span></td>
+            <td class="td-delta neu">—</td>
+          </tr>
+          <tr>
+            <td>Represados</td>
+            <td><span class="n">173</span> <span class="pct ok">98%</span></td>
+            <td><span class="n">323</span> <span class="pct warn">87%</span></td>
+            <td class="td-delta"><span class="delta pos">+11pp</span></td>
+          </tr>
+          <tr>
+            <td>Alta prop. 400+</td>
+            <td><span class="n">87</span> <span class="pct warn">50%</span></td>
+            <td><span class="n">159</span> <span class="pct warn">49%</span></td>
+            <td class="td-delta"><span class="delta pos">+1pp</span></td>
+          </tr>
+          <tr>
+            <td>1pdd</td>
+            <td><span class="n">100</span> <span class="pct ok">58%</span></td>
+            <td><span class="n">192</span> <span class="pct ok">59%</span></td>
+            <td class="td-delta"><span class="delta neu">−1pp</span></td>
+          </tr>
+          <tr class="accent">
+            <td>5pdd</td>
+            <td><span class="n">62</span> <span class="pct bad">36%</span></td>
+            <td><span class="n">116</span> <span class="pct bad">36%</span></td>
+            <td class="td-delta"><span class="delta neu">0pp</span></td>
+          </tr>
+          <tr class="accent">
+            <td>5pdd + setup</td>
+            <td><span class="n">57</span> <span class="pct bad">33%</span></td>
+            <td><span class="n">106</span> <span class="pct bad">33%</span></td>
+            <td class="td-delta"><span class="delta neu">0pp</span></td>
+          </tr>
+          <tr class="accent">
+            <td>Retenção WoW</td>
+            <td><span class="n">23</span> <span class="pct bad">37%</span></td>
+            <td><span class="n">74</span> <span class="pct ok">64%</span></td>
+            <td class="td-delta"><span class="delta neg">−27pp</span></td>
+          </tr>
+          <tr>
+            <td>Potencial 400+ <span class="fn">¹</span></td>
+            <td><span class="n">33</span> <span class="pct ok">58%</span></td>
+            <td><span class="n">65</span> <span class="pct ok">61%</span></td>
+            <td class="td-delta"><span class="delta wneg">−3pp</span></td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="ret-racional" style="margin-top:10px;">
+        <strong>Racional Retenção WoW:</strong> parceiro teve 5 pdds em alguma das frentes até domingo 07/06? Se sim, está contabilizado na base. Teve pedidos na semana seguinte? Se sim, contabiliza na retenção da semana.
+      </div>
+    </div>
+
+    <!-- COMERCIAL -->
+    <div class="card">
+      <div class="card-title">Comercial <span class="pill-com">SF INBOUND</span></div>
+      <table>
+        <thead>
+          <tr>
+            <th>Métrica</th>
+            <th>Feriado 04–07/06</th>
+            <th>Total até 07/06</th>
+            <th class="th-delta">Δ pp</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Vendas</td>
+            <td><span class="n">41</span></td>
+            <td><span class="n">199</span></td>
+            <td class="td-delta neu">—</td>
+          </tr>
+          <tr>
+            <td>Represados</td>
+            <td><span class="n">33</span> <span class="pct warn">80%</span></td>
+            <td><span class="n">67</span> <span class="pct bad">34%</span></td>
+            <td class="td-delta"><span class="delta pos">+46pp</span> <span class="fn">*</span></td>
+          </tr>
+          <tr>
+            <td>Alta prop. 400+</td>
+            <td><span class="n">5</span> <span class="pct bad">15%</span></td>
+            <td><span class="n">13</span> <span class="pct bad">19%</span></td>
+            <td class="td-delta"><span class="delta wneg">−4pp</span></td>
+          </tr>
+          <tr>
+            <td>1pdd</td>
+            <td><span class="n">13</span> <span class="pct warn">39%</span></td>
+            <td><span class="n">31</span> <span class="pct warn">46%</span></td>
+            <td class="td-delta"><span class="delta wneg">−7pp</span></td>
+          </tr>
+          <tr class="accent">
+            <td>5pdd</td>
+            <td><span class="n">5</span> <span class="pct bad">15%</span></td>
+            <td><span class="n">15</span> <span class="pct bad">22%</span></td>
+            <td class="td-delta"><span class="delta neg">−7pp</span></td>
+          </tr>
+          <tr class="accent">
+            <td>5pdd + setup</td>
+            <td><span class="n">5</span> <span class="pct bad">15%</span></td>
+            <td><span class="n">13</span> <span class="pct bad">19%</span></td>
+            <td class="td-delta"><span class="delta wneg">−4pp</span></td>
+          </tr>
+          <tr class="accent">
+            <td>Retenção WoW</td>
+            <td><span class="n">4</span> <span class="pct warn">80%</span></td>
+            <td><span class="n">12</span> <span class="pct warn">80%</span></td>
+            <td class="td-delta"><span class="delta neu">0pp</span></td>
+          </tr>
+          <tr>
+            <td>Potencial 400+ <span class="fn">¹</span></td>
+            <td><span class="n">0</span> <span class="pct bad">0%</span></td>
+            <td><span class="n">1</span> <span class="pct bad">8%</span></td>
+            <td class="td-delta"><span class="delta neg">−8pp</span></td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="ret-racional" style="margin-top:10px;">
+        <strong>Racional Retenção WoW:</strong> parceiro teve 5 pdds em alguma das frentes até domingo 07/06? Se sim, está contabilizado na base. Teve pedidos na semana seguinte? Se sim, contabiliza na retenção da semana.
+      </div>
+      <div style="margin-top:6px;font-size:0.69rem;color:#aaa;">* Represados Com feriado alto (80%) vs total (34%): efeito de timing — lojas recentes ainda não passaram pelo processo completo.<br>¹ Potencial 400+ calculado sobre quem fez 5pdd + setup completo.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══ TABELA COMPARATIVA SELF vs COMERCIAL ═══════════════════ -->
+<div class="section">
+  <h2>Self vs Comercial — por período</h2>
+  <div class="full-card">
+    <table class="cmp-table">
+      <thead>
+        <tr>
+          <th rowspan="2" style="text-align:left;min-width:145px;vertical-align:bottom;">Métrica</th>
+          <th colspan="3" class="period-h period-f">🟠 Feriado 04–07/06</th>
+          <th colspan="3" class="period-h period-t">🟢 Total até 07/06</th>
+        </tr>
+        <tr>
+          <th class="self-h">Self</th>
+          <th class="com-h">Comercial</th>
+          <th class="gap-h">Gap Self−Com</th>
+          <th class="self-h sep">Self</th>
+          <th class="com-h">Comercial</th>
+          <th class="gap-h">Gap Self−Com</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="grp-hdr"><td colspan="7">Volume e entrada no funil</td></tr>
+        <tr>
+          <td>Vendas</td>
+          <td><span class="n">177</span></td>
+          <td><span class="n">41</span></td>
+          <td class="gap-cell neu">—</td>
+          <td class="sep"><span class="n">370</span></td>
+          <td><span class="n">199</span></td>
+          <td class="gap-cell neu">—</td>
+        </tr>
+        <tr>
+          <td>Represados</td>
+          <td><span class="n">173</span> <span class="pct ok">98%</span></td>
+          <td><span class="n">33</span> <span class="pct warn">80%</span></td>
+          <td class="gap-cell"><span class="delta pos">+18pp</span></td>
+          <td class="sep"><span class="n">323</span> <span class="pct warn">87%</span></td>
+          <td><span class="n">67</span> <span class="pct bad">34%</span></td>
+          <td class="gap-cell"><span class="delta pos">+53pp</span></td>
+        </tr>
+        <tr>
+          <td>Alta prop. 400+</td>
+          <td><span class="n">87</span> <span class="pct warn">50%</span></td>
+          <td><span class="n">5</span> <span class="pct bad">15%</span></td>
+          <td class="gap-cell"><span class="delta pos">+35pp</span></td>
+          <td class="sep"><span class="n">159</span> <span class="pct warn">49%</span></td>
+          <td><span class="n">13</span> <span class="pct bad">19%</span></td>
+          <td class="gap-cell"><span class="delta pos">+30pp</span></td>
+        </tr>
+
+        <tr class="grp-hdr"><td colspan="7">Ativação</td></tr>
+        <tr>
+          <td>1pdd</td>
+          <td><span class="n">100</span> <span class="pct ok">58%</span></td>
+          <td><span class="n">13</span> <span class="pct warn">39%</span></td>
+          <td class="gap-cell"><span class="delta pos">+19pp</span></td>
+          <td class="sep"><span class="n">192</span> <span class="pct ok">59%</span></td>
+          <td><span class="n">31</span> <span class="pct warn">46%</span></td>
+          <td class="gap-cell"><span class="delta pos">+13pp</span></td>
+        </tr>
+        <tr class="accent">
+          <td>5pdd</td>
+          <td><span class="n">62</span> <span class="pct bad">36%</span></td>
+          <td><span class="n">5</span> <span class="pct bad">15%</span></td>
+          <td class="gap-cell"><span class="delta pos">+21pp</span></td>
+          <td class="sep"><span class="n">116</span> <span class="pct bad">36%</span></td>
+          <td><span class="n">15</span> <span class="pct bad">22%</span></td>
+          <td class="gap-cell"><span class="delta pos">+14pp</span></td>
+        </tr>
+        <tr class="accent">
+          <td>5pdd + setup</td>
+          <td><span class="n">57</span> <span class="pct bad">33%</span></td>
+          <td><span class="n">5</span> <span class="pct bad">15%</span></td>
+          <td class="gap-cell"><span class="delta pos">+18pp</span></td>
+          <td class="sep"><span class="n">106</span> <span class="pct bad">33%</span></td>
+          <td><span class="n">13</span> <span class="pct bad">19%</span></td>
+          <td class="gap-cell"><span class="delta pos">+14pp</span></td>
+        </tr>
+
+        <tr class="grp-hdr"><td colspan="7">Retenção e qualidade</td></tr>
+        <tr class="accent">
+          <td>Retenção WoW</td>
+          <td><span class="n">23</span> <span class="pct bad">37%</span></td>
+          <td><span class="n">4</span> <span class="pct warn">80%</span></td>
+          <td class="gap-cell"><span class="delta neg">−43pp</span></td>
+          <td class="sep"><span class="n">74</span> <span class="pct ok">64%</span></td>
+          <td><span class="n">12</span> <span class="pct warn">80%</span></td>
+          <td class="gap-cell"><span class="delta neg">−16pp</span></td>
+        </tr>
+        <tr>
+          <td>Potencial 400+ <span class="fn">¹</span></td>
+          <td><span class="n">33</span> <span class="pct ok">58%</span></td>
+          <td><span class="n">0</span> <span class="pct bad">0%</span></td>
+          <td class="gap-cell"><span class="delta pos">+58pp</span></td>
+          <td class="sep"><span class="n">65</span> <span class="pct ok">61%</span></td>
+          <td><span class="n">1</span> <span class="pct bad">8%</span></td>
+          <td class="gap-cell"><span class="delta pos">+53pp</span></td>
+        </tr>
+      </tbody>
+    </table>
+    <div style="margin-top:8px;font-size:0.69rem;color:#aaa;">¹ Potencial 400+ calculado sobre quem fez 5pdd + setup completo.</div>
+  </div>
+</div>
+
+<!-- ══ HIGHLIGHTS ════════════════════════════════════════════ -->
+<div class="section">
+  <h2>Highlights — feriado vs total</h2>
+  <div class="hl-columns">
+
+    <div class="hl-group">
+      <div class="hl-group-title green">✅ O que funcionou</div>
+      <div class="hl-item">
+        <div class="tag-row"><span class="tag f">Feriado 36%</span><span class="tag t">Total 36%</span><span class="tag g">Δ 0pp</span></div>
+        <div class="hl-item-title">5pdd Self idêntico nos dois períodos</div>
+        <div class="hl-item-body">1pdd (58% vs 59%), 5pdd+setup (33% vs 33%) e potencial 400+ (58% vs 61%) — todos estáveis. O feriado não degradou a qualidade Self.</div>
+      </div>
+      <div class="hl-item">
+        <div class="tag-row"><span class="tag f">Feriado 50%</span><span class="tag t">Total 49%</span><span class="tag g">Δ +1pp</span></div>
+        <div class="hl-item-title">Mix 400+ preservado no feriado</div>
+        <div class="hl-item-body">A captação de lojas qualificadas não caiu em período atípico — acima do baseline de 39% da aba 400?</div>
+      </div>
+      <div class="hl-item">
+        <div class="tag-row"><span class="tag g">58%→61% de 5pdd+setup para pot.400+ (Self)</span></div>
+        <div class="hl-item-title">Quem chega ao final converte bem</div>
+        <div class="hl-item-body">O problema é levar mais lojas até 5pdd+setup — não a conversão em si.</div>
+      </div>
+    </div>
+
+    <div class="hl-group">
+      <div class="hl-group-title red">🔴 Pontos críticos</div>
+      <div class="hl-item">
+        <div class="tag-row"><span class="tag f">Feriado 40%</span><span class="tag t">Total 66%</span><span class="tag d">Δ −26pp</span></div>
+        <div class="hl-item-title">Retenção WoW feriado abaixo do padrão</div>
+        <div class="hl-item-body">27/67 = 40% vs 86/131 = 66%. Lojas recentes — as 22 com 0 pedidos WoW são prioridade de contato. Monitorar se o % sobe nas próximas semanas.</div>
+      </div>
+      <div class="hl-item">
+        <div class="tag-row"><span class="tag f">1pdd: 58%</span><span class="tag d">→ 5pdd: 36% (−38 lojas)</span></div>
+        <div class="hl-item-title">Gargalo estrutural entre 1pdd e 5pdd</div>
+        <div class="hl-item-body">Padrão idêntico no histórico total — não é efeito do feriado. Maior ponto de perda e maior alavanca de qualidade.</div>
+      </div>
+      <div class="hl-item">
+        <div class="tag-row"><span class="tag d">66% das vendas Com não entram na esteira (total)</span></div>
+        <div class="hl-item-title">Represamento Comercial: só 34% do total</div>
+        <div class="hl-item-body">132 de 199 lojas vendem sem entrar no funil de ativação. Perda de visibilidade estrutural.</div>
+      </div>
+    </div>
+
+    <div class="hl-group">
+      <div class="hl-group-title purple">📊 Self vs Comercial</div>
+      <div class="hl-item">
+        <div class="tag-row"><span class="tag f">Gap feriado +21pp</span><span class="tag t">Gap total +14pp</span></div>
+        <div class="hl-item-title">Gap de 5pdd se amplia no feriado</div>
+        <div class="hl-item-body">Self 36% vs Com 15% no feriado — o período atípico exacerbou a diferença de qualidade entre canais.</div>
+      </div>
+      <div class="hl-item">
+        <div class="tag-row"><span class="tag f">Self 50%</span><span class="tag t">Com 15%</span><span class="tag d">+35pp feriado</span></div>
+        <div class="hl-item-title">Propensão 400+: Self capta 3× mais qualificados</div>
+        <div class="hl-item-body">O Comercial capta principalmente lojas de baixa propensão — limita estruturalmente a qualidade do canal.</div>
+      </div>
+      <div class="hl-item">
+        <div class="tag-row"><span class="tag f">Self: +58pp de pot.400+</span><span class="tag d">Com: 0% no feriado</span></div>
+        <div class="hl-item-title">Eficiência venda → potencial 400+</div>
+        <div class="hl-item-body">No feriado: 0 potenciais 400+ do Comercial. No total: apenas 1 de 199 lojas. Gap Self−Com é de +53pp no total e +58pp no feriado.</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══ FUNIL VISUAL ══════════════════════════════════════════ -->
+<div class="section">
+  <h2>Funil de perdas — Self · Feriado 04–07/06</h2>
+  <div class="funnel-grid">
+    <div class="funnel-card">
+      <div class="card-title" style="margin-bottom:16px;">Etapas e perdas por step</div>
+      <div class="step">
+        <div class="step-label">Vendas</div>
+        <div class="step-bar-wrap"><div class="step-bar" style="width:100%;background:#6366f1;"><span class="step-bar-lbl">177</span></div></div>
+        <div class="step-num">177</div><div class="step-pct ok">100%</div>
+      </div>
+      <div class="loss-label">▼ −4 não entram (2%)</div>
+      <div class="step">
+        <div class="step-label">Represados</div>
+        <div class="step-bar-wrap"><div class="step-bar" style="width:97.7%;background:#3b82f6;"><span class="step-bar-lbl">173</span></div></div>
+        <div class="step-num">173</div><div class="step-pct ok">98%</div>
+      </div>
+      <div class="loss-label">▼ −73 sem 1pdd (42%)</div>
+      <div class="step">
+        <div class="step-label">1pdd</div>
+        <div class="step-bar-wrap"><div class="step-bar" style="width:57.8%;background:#22c55e;"><span class="step-bar-lbl">100</span></div></div>
+        <div class="step-num">100</div><div class="step-pct ok">58%</div>
+      </div>
+      <div class="loss-label big">▼ −38 não chegam ao 5pdd (38%) ← maior perda</div>
+      <div class="step">
+        <div class="step-label">5pdd</div>
+        <div class="step-bar-wrap"><div class="step-bar" style="width:35.8%;background:#f59e0b;"><span class="step-bar-lbl">62</span></div></div>
+        <div class="step-num">62</div><div class="step-pct warn">36%</div>
+      </div>
+      <div class="loss-label">▼ −5 sem setup (8%)</div>
+      <div class="step">
+        <div class="step-label">5pdd + setup</div>
+        <div class="step-bar-wrap"><div class="step-bar" style="width:32.2%;background:#ef4444;"><span class="step-bar-lbl">57</span></div></div>
+        <div class="step-num">57</div><div class="step-pct bad">33%</div>
+      </div>
+      <div class="loss-label">▼ −24 sem potencial 400+ (42%)</div>
+      <div class="step">
+        <div class="step-label">Potencial 400+</div>
+        <div class="step-bar-wrap"><div class="step-bar" style="width:18.6%;background:#7c3aed;"><span class="step-bar-lbl">33</span></div></div>
+        <div class="step-num">33</div><div class="step-pct" style="color:#7c3aed;">19%</div>
+      </div>
+    </div>
+    <div class="funnel-card">
+      <div class="card-title" style="margin-bottom:14px;">Onde agir</div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div style="background:#fef2f2;border-left:3px solid #ef4444;border-radius:6px;padding:12px 14px;">
+          <div style="font-size:0.77rem;font-weight:700;color:#991b1b;margin-bottom:3px;">🔴 1pdd → 5pdd: −38 lojas (maior gargalo)</div>
+          <div style="font-size:0.74rem;color:#555;line-height:1.5;">38% das lojas com 1pdd não chegam ao 5pdd — padrão idêntico no histórico total. Maior alavanca de qualidade disponível.</div>
+        </div>
+        <div style="background:#fefce8;border-left:3px solid #f59e0b;border-radius:6px;padding:12px 14px;">
+          <div style="font-size:0.77rem;font-weight:700;color:#92400e;margin-bottom:3px;">🟡 5 lojas com 5pdd mas sem setup</div>
+          <div style="font-size:0.74rem;color:#555;line-height:1.5;">Praticamente ativadas — um contato pontual resolve. No total são 10 lojas nessa condição.</div>
+        </div>
+        <div style="background:#f0fdf4;border-left:3px solid #22c55e;border-radius:6px;padding:12px 14px;">
+          <div style="font-size:0.77rem;font-weight:700;color:#14532d;margin-bottom:3px;">✅ Retenção WoW feriado: 40% — monitorar</div>
+          <div style="font-size:0.74rem;color:#555;line-height:1.5;">27/67 já retiveram. 40 lojas do feriado são recentes — acompanhar se sobem ao padrão de 66%.</div>
+        </div>
+        <div style="background:#faf5ff;border-left:3px solid #8b5cf6;border-radius:6px;padding:12px 14px;">
+          <div style="font-size:0.77rem;font-weight:700;color:#4c1d95;margin-bottom:3px;">🟣 Comercial: 0 potenciais 400+ no feriado</div>
+          <div style="font-size:0.74rem;color:#555;line-height:1.5;">5 chegaram ao 5pdd, todos com setup. Problema no mix de leads captados — intervenção upstream.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ABAS COMPLEMENTARES ═══════════════════════════════════ -->
+<div class="section">
+  <h2>Insights das abas complementares</h2>
+  <div class="compl-grid">
+    <div class="compl-card">
+      <div class="card-title" style="margin-bottom:12px;">Aba 400? — propensão</div>
+      <div class="kv"><span class="kv-label">Altíssima (faixa 1)</span><span class="kv-val ok">31%</span></div>
+      <div class="mini-bar-wrap"><div class="mini-bar" style="width:31%;background:#22c55e;"></div></div>
+      <div class="kv"><span class="kv-label">Alta (faixa 2)</span><span class="kv-val ok">8%</span></div>
+      <div class="mini-bar-wrap"><div class="mini-bar" style="width:8%;background:#86efac;"></div></div>
+      <div class="kv"><span class="kv-label">Média (faixa 3)</span><span class="kv-val warn">46%</span></div>
+      <div class="mini-bar-wrap"><div class="mini-bar" style="width:46%;background:#fde68a;"></div></div>
+      <div class="kv"><span class="kv-label">Baixa (faixa 4)</span><span class="kv-val bad">15%</span></div>
+      <div class="mini-bar-wrap" style="margin-bottom:0;"><div class="mini-bar" style="width:15%;background:#fca5a5;"></div></div>
+      <div class="note" style="margin-top:10px;">Na base ampla, apenas <strong>~39% com Alta ou Altíssima propensão</strong>. Vendas Self feriado (50%) estão acima. Atenção: aba inclui deals com status <strong>LOST</strong>.</div>
+    </div>
+    <div class="compl-card">
+      <div class="card-title" style="margin-bottom:12px;">Aba Retenção WoW — 49 lojas</div>
+      <div class="kv"><span class="kv-label">Com pedidos WoW (&gt;0)</span><span class="kv-val ok">27 (55%)</span></div>
+      <div class="mini-bar-wrap"><div class="mini-bar" style="width:55%;background:#22c55e;"></div></div>
+      <div class="kv"><span class="kv-label">Sem pedidos WoW (=0)</span><span class="kv-val bad">22 (45%)</span></div>
+      <div class="mini-bar-wrap"><div class="mini-bar" style="width:45%;background:#fca5a5;"></div></div>
+      <div style="height:8px;"></div>
+      <div class="kv"><span class="kv-label">Total pedidos WoW</span><span class="kv-val">190</span></div>
+      <div class="kv"><span class="kv-label">Média por loja</span><span class="kv-val warn">3,9 ped.</span></div>
+      <div class="kv" style="margin-bottom:0;"><span class="kv-label">Top lojas</span><span class="kv-val ok">31 · 26 · 18 ped.</span></div>
+      <div class="note" style="margin-top:10px;">Distribuição concentrada — as <strong>22 com 0 pedidos</strong> são candidatas a intervenção imediata. Cruzar com setup e propensão 400+ para priorizar.</div>
+    </div>
+    <div class="compl-card">
+      <div class="card-title" style="margin-bottom:12px;">Aba Origem Venda — sub-canais</div>
+      <div style="font-size:0.71rem;color:#aaa;margin-bottom:8px;">Composição identificada na base até 07/06</div>
+      <div class="origem-row"><div class="origem-lbl">LP Self Checkout</div><div class="origem-bw"><div class="origem-b" style="width:62%;background:#3b82f6;"></div></div><div class="origem-tag">maior vol.</div></div>
+      <div class="origem-row"><div class="origem-lbl">Self Admin</div><div class="origem-bw"><div class="origem-b" style="width:22%;background:#6366f1;"></div></div><div class="origem-tag">2º</div></div>
+      <div class="origem-row"><div class="origem-lbl">SF Inbound</div><div class="origem-bw"><div class="origem-b" style="width:28%;background:#ef4444;"></div></div><div class="origem-tag" style="color:#ef4444;">comercial</div></div>
+      <div class="origem-row"><div class="origem-lbl">Self Checkout Sofia</div><div class="origem-bw"><div class="origem-b" style="width:5%;background:#22c55e;"></div></div><div class="origem-tag" style="color:#16a34a;">novo</div></div>
+      <div class="origem-row"><div class="origem-lbl">SSI Self Sofia</div><div class="origem-bw"><div class="origem-b" style="width:3%;background:#86efac;"></div></div><div class="origem-tag" style="color:#16a34a;">novo</div></div>
+      <div class="origem-row" style="margin-bottom:0;"><div class="origem-lbl">Mozart / Livechat</div><div class="origem-bw"><div class="origem-b" style="width:2%;background:#d1d5db;"></div></div><div class="origem-tag">residual</div></div>
+      <div class="note" style="margin-top:10px;">Decompor 5pdd e retenção <strong>por sub-canal Self</strong> pode revelar gaps. Canais <strong>Sofia</strong> são novos — monitorar qualidade de ativação vs LP Self padrão.</div>
+    </div>
+  </div>
+</div>
+
+<footer>Dados: Tabela dinâmica 1 · Base · 400? · Retenção WoW · Origem Venda · Planilha Análise vendas feriado 10/06 · 10/06/2026</footer>
+</body>
+</html>
